@@ -1,0 +1,8 @@
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="MCG-NJU/MultiSports",
+    repo_type="dataset",
+    local_dir="./multisports_data"
+)
+
