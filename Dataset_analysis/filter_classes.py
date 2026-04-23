@@ -107,6 +107,6 @@ def analyze_multisports_pure_test(pkl_path, n_rare=16):
 
 # --- EXECUTION ---
 PATH = "multisports_data/data/trainval/multisports_GT.pkl"
-N_RARE = 21
+N_RARE = 20
 
 full_report_df = analyze_multisports_pure_test(PATH, n_rare=N_RARE)
