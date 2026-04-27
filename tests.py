@@ -1,8 +1,7 @@
 from dataset.dataset import FSARMultisportsDatasetTrain
 import torch 
 
-# 2. Then import your other libraries
-from video_utils import read_video, get_tublets, crop_video_tubelets
+# 2. Then import your other librarie
 import cv2
 import pickle
 
@@ -48,9 +47,14 @@ ground_truth_path="multisports_fewshot_GT.pkl"
 
 # print(data["gttubes"])
 
-from transforms import get_dinov2_transforms
+# from dataset.transforms import get_dinov2_transforms
 
-ds  = FSARMultisportsDatasetTrain(data_root=data_root, gt_path=ground_truth_path, transform=get_dinov2_transforms())
+# ds  = FSARMultisportsDatasetTrain(data_root=data_root, gt_path=ground_truth_path, transform=get_dinov2_transforms())
 
-tublet, lab = ds.__getitem__(0)
-print(lab, tublet.shape)
+# tublet, lab = ds.__getitem__(0)
+# print(lab, tublet.shape)
+
+from dataset.dataloader import build_train_dataloader
+from config import Config
+
+dataloader = build_train_dataloader(Config())

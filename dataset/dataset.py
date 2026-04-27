@@ -7,22 +7,35 @@ import os
 from decord import VideoReader
 from decord import cpu, gpu
 from PIL import Image
+import random
 
 # Dataset only for training - we only extract the tubelets
 class FSARMultisportsDatasetTrain(Dataset):
-    def __init__(self, data_root, gt_path, gpu_available=False, transform=None):
+    def __init__(self, data_root, gt_path, num_frames, gpu_available=False, transform=None):
         self.data_root = data_root
         self.gt_path = gt_path
         self.transform = transform
         self.gpu_available = gpu_available
+        self.num_frames = num_frames
+        
 
         # Load gt data
         with open(gt_path, "rb") as file:
             data = pickle.load(file)
 
+        # To get the labels from label ids
+        self.label_dict = data["train_labels"]
+
+        # Train videos
+        train_videos_set = set(data["train_videos"])
+
         # Get the training samples
         self.samples = []
         for video_id, gttube_video_dicts in data["gttubes"].items():
+
+            if video_id not in train_videos_set:
+                continue
+
             for label, gttubes_video in gttube_video_dicts.items():
                 for gttube in gttubes_video:
                     gttube = np.array(gttube)
@@ -32,7 +45,6 @@ class FSARMultisportsDatasetTrain(Dataset):
                         "frame_indices": gttube[:, 0].astype(int).tolist(),
                         "bboxes": gttube[:, 1:]
                     })
-
 
 
     def __len__(self):
@@ -45,6 +57,13 @@ class FSARMultisportsDatasetTrain(Dataset):
         bboxes = sample["bboxes"]
         label = sample["label"]
 
+        # Uniformly sample frames and bboxes
+        tublet_num_frames = len(frame_indices)
+        sampled_idxs = np.linspace(0, tublet_num_frames -1, self.num_frames).astype(int)
+        frame_indices = [frame_indices[i] for i in sampled_idxs]
+        bboxes = [bboxes[i] for i in sampled_idxs]
+
+
         # Construct path for video
         video_path = os.path.join(self.data_root, f"{video_id}.mp4")
         # Read video
@@ -54,6 +73,8 @@ class FSARMultisportsDatasetTrain(Dataset):
             vr = VideoReader(video_path, ctx=cpu(0))
 
         video_data = vr.get_batch(frame_indices).asnumpy()
+
+        del vr
 
         # Get tublets
         tublet_frames = []

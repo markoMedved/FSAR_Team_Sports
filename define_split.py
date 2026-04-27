@@ -48,6 +48,7 @@ sorted_by_count = sorted(class_counts.items(), key=lambda item: item[1])
 # Make validation and test splits from this, use stratified by sport
 test_val_ids = sorted_by_count[:N_test + N_val]
 test_val_ids = [item[0] for item in test_val_ids[:N_test + N_val]]
+train_ids = [item[0] for item in sorted_by_count[N_test + N_val:]]
 
 # Separate the ids by sport and assign randomly 
 sports_for_ids = []
@@ -142,20 +143,35 @@ remaining_ids = sorted(class_counts.keys())
 label_map = {old_id: new_id for new_id, old_id in enumerate(remaining_ids)}
 processed_gttubes = {}
 
-for vid_key, vid_tublets in gttubes.items():
-    processed_gttubes[vid_key] = {label_map[old_id]: tubes for old_id, tubes in vid_tublets.items()}
+train_label_map = {old_id: new_id for new_id, old_id in enumerate(train_ids)}
+val_label_map = {old_id: new_id for new_id, old_id in enumerate(val_ids)}
+test_label_map = {old_id: new_id for new_id, old_id in enumerate(test_ids)}
 
-new_labels = [labels[i] for i in remaining_ids]
-new_test_ids = [label_map[tid] for tid in test_val_ids]
+train_labels_list = [labels[old_id] for old_id in train_ids]
+val_labels_list = [labels[old_id] for old_id in val_ids]
+test_labels_list = [labels[old_id] for old_id in test_ids]
+print(train_labels_list)
+
+for vid_key, vid_tublets in gttubes.items():
+    if vid_key in train_videos:
+        processed_gttubes[vid_key] = {train_label_map[old_id]: tubes for old_id, tubes in vid_tublets.items() if old_id in train_label_map}
+    elif vid_key in val_videos:
+        processed_gttubes[vid_key] = {val_label_map[old_id]: tubes for old_id, tubes in vid_tublets.items() if old_id in val_label_map}
+    elif vid_key in test_videos:
+        processed_gttubes[vid_key] = {test_label_map[old_id]: tubes for old_id, tubes in vid_tublets.items() if old_id in test_label_map}
+
 
 # Save the splits back into a new pickle file
 split_dict = {
-    "labels": new_labels,
+    "train_labels": train_labels_list,
+    "validation_labels": val_labels_list,
+    "test_labels": test_labels_list,
     "train_videos": train_videos,
     "test_videos": test_videos,
+    "validation_videos": val_videos,
     "nframes": data["nframes"],
     "resolution": data["resolution"],
-    "gttubes": gttubes
+    "gttubes": processed_gttubes
 }
 
 # Create the ground truth pickle file
