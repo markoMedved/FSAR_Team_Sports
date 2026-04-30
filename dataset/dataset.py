@@ -60,7 +60,7 @@ class FSARMultisportsDatasetTrain(Dataset):
         # Uniformly sample frames and bboxes
         tublet_num_frames = len(frame_indices)
         sampled_idxs = np.linspace(0, tublet_num_frames -1, self.num_frames).astype(int)
-        frame_indices = [frame_indices[i] for i in sampled_idxs]
+        frame_indices = [frame_indices[i] - 1 for i in sampled_idxs] # The frame annotations are from 1
         bboxes = [bboxes[i] for i in sampled_idxs]
 
 
@@ -95,8 +95,5 @@ class FSARMultisportsDatasetTrain(Dataset):
         tublet_tensor = torch.stack(tublet_frames).permute(1, 0, 2, 3)
         return tublet_tensor, torch.tensor(label)
 
-            
 
-
-        
-
+class 
