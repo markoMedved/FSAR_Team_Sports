@@ -96,4 +96,3 @@ class FSARMultisportsDatasetTrain(Dataset):
         return tublet_tensor, torch.tensor(label)
 
 
-class 
