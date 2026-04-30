@@ -13,7 +13,7 @@ class Config:
     # Training parameters
     batch_size = 16
     num_workers = 0
-    transforms = get_dinov2_transforms()
+    transform = get_dinov2_transforms()
 
     # Amount of frames used 
     num_frames = 16
